@@ -82,7 +82,7 @@ export const orderBy = function <T>(
     ? null
     : function (value: T, index: number) {
         if (sortBy) {
-          return ensureArray(sortBy).flatMap((by) => {
+          return flatMap(ensureArray(sortBy), (by) => {
             if (isString(by)) {
               return get(value, by)
             } else {
@@ -180,8 +180,8 @@ export const getColumnByCell = function <T>(
 
 export const getRowIdentity = <T extends Record<string, any>>(
   row: T,
-  rowKey: string | ((row: T) => any) | null
-): string | undefined => {
+  rowKey: string | ((row: T) => string) | null
+) => {
   if (!row) throw new Error('Row is required when get row identity')
   if (isString(rowKey)) {
     if (!rowKey.includes('.')) {
@@ -193,9 +193,8 @@ export const getRowIdentity = <T extends Record<string, any>>(
       current = current[element]
     }
     return `${current}`
-  } else if (isFunction(rowKey)) {
-    return rowKey.call(null, row)
   }
+  return rowKey?.(row) ?? ''
 }
 
 export const getKeysMap = function <T extends Record<string, any>>(
@@ -208,8 +207,7 @@ export const getKeysMap = function <T extends Record<string, any>>(
   const arrayMap: Record<string, { row: T; index: number }> = {}
 
   data.forEach((row, index) => {
-    const identifier = getRowIdentity(row, rowKey)
-    if (identifier) arrayMap[identifier] = { row, index }
+    arrayMap[getRowIdentity(row, rowKey)] = { row, index }
 
     if (flatten) {
       const children = row[childrenKey]
@@ -279,7 +277,7 @@ export function parseHeight(height: number | string | null) {
 }
 
 // https://github.com/reduxjs/redux/blob/master/src/compose.ts
-export function compose(...funcs: Function[]) {
+export function compose(...funcs: ((...args: any[]) => void)[]) {
   if (funcs.length === 0) {
     return <T>(arg: T) => arg
   }
@@ -288,7 +286,7 @@ export function compose(...funcs: Function[]) {
   }
   return funcs.reduce(
     (a, b) =>
-      (...args: any) =>
+      (...args: any[]) =>
         a(b(...args))
   )
 }
@@ -633,7 +631,7 @@ export const getFixedColumnOffset = <T>(
     after = 0,
   } = isFixedColumn(index, fixed, store, realColumns)
   if (!direction) {
-    return
+    return null
   }
   const styles: CSSProperties = {}
   const isLeft = direction === 'left'
