@@ -240,7 +240,7 @@ export function mergeOptions<T extends DefaultRow, K extends DefaultRow>(
   return options
 }
 
-export function parseWidth(width: number | string): number | string {
+export function parseWidth(width?: number | string): number | string {
   if (width === '') return width
   if (!isUndefined(width)) {
     width = Number.parseInt(width as string, 10)
@@ -248,7 +248,7 @@ export function parseWidth(width: number | string): number | string {
       width = ''
     }
   }
-  return width
+  return width!
 }
 
 export function parseMinWidth(minWidth: number | string): number | string {
@@ -413,7 +413,7 @@ const getTableOverflowTooltipProps = <T extends DefaultRow>(
   props: TableOverflowTooltipOptions,
   innerText: string,
   row: T,
-  column: TableColumnCtx<T>
+  column: TableColumnCtx<T> | null
 ) => {
   // merge popperOptions
   const popperOptions = {
@@ -421,7 +421,7 @@ const getTableOverflowTooltipProps = <T extends DefaultRow>(
     ...props.popperOptions,
   }
 
-  const tooltipFormatterContent = isFunction(column.tooltipFormatter)
+  const tooltipFormatterContent = isFunction(column?.tooltipFormatter)
     ? column.tooltipFormatter({
         row,
         column,
@@ -452,9 +452,9 @@ export function createTablePopper<T extends DefaultRow>(
   props: TableOverflowTooltipOptions,
   popperContent: string,
   row: T,
-  column: TableColumnCtx<T>,
-  trigger: HTMLElement,
-  table: Table<[]>
+  column: TableColumnCtx<T> | null,
+  trigger: HTMLElement | null,
+  table: Table<DefaultRow>
 ) {
   const tableOverflowTooltipProps = getTableOverflowTooltipProps(
     props,
@@ -505,7 +505,7 @@ export function createTablePopper<T extends DefaultRow>(
     scrollContainer?.removeEventListener('scroll', removePopper!)
     removePopper = null
   }
-  removePopper.trigger = trigger
+  removePopper.trigger = trigger ?? undefined
   removePopper.vm = vm
   scrollContainer?.addEventListener('scroll', removePopper)
 }
@@ -529,7 +529,7 @@ function getColSpan<T extends DefaultRow>(
 
 export const isFixedColumn = <T extends DefaultRow>(
   index: number,
-  fixed: string | boolean,
+  fixed: string | boolean | undefined,
   store: any,
   realColumns?: TableColumnCtx<T>[]
 ) => {
@@ -583,7 +583,7 @@ export const isFixedColumn = <T extends DefaultRow>(
 export const getFixedColumnsClass = <T extends DefaultRow>(
   namespace: string,
   index: number,
-  fixed: string | boolean,
+  fixed: string | boolean | undefined,
   store: any,
   realColumns?: TableColumnCtx<T>[],
   offset = 0
@@ -629,7 +629,7 @@ function getOffset<T extends DefaultRow>(
 
 export const getFixedColumnOffset = <T extends DefaultRow>(
   index: number,
-  fixed: string | boolean,
+  fixed: string | boolean | undefined,
   store: any,
   realColumns?: TableColumnCtx<T>[]
 ) => {
