@@ -138,7 +138,7 @@ function useTree<T extends Record<string, any>>(
               loading: !!loading,
               expanded: getExpanded(oldValue, key),
               children: lazyNodeChildren,
-              //level: '',
+              level: undefined,
             }
           }
         })
